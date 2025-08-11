@@ -1,0 +1,168 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Plant Leaf Disease Detector</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="/static/script.js" defer></script>
+</head>
+<body class="light-mode">
+    <!-- Animated background floating leaves -->
+    <div class="floating-leaf"></div>
+    <div class="floating-leaf"></div>
+    <div class="floating-leaf"></div>
+    <div class="floating-leaf"></div>
+    <div class="floating-leaf"></div>
+    
+    <!-- Dark/Light Mode Toggle -->
+    <button class="theme-toggle" title="Toggle Dark/Light Mode">
+        <i class="fa-solid fa-leaf"></i>
+    </button>
+
+    <!-- Language Toggle -->
+    <div class="language-toggle">
+        <label for="language-select" data-i18n="language">Language:</label>
+        <select id="language-select">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="te">Telugu</option>
+        </select>
+    </div>
+
+    <div class="container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="error-message {{ 'success-message' if category == 'success' else '' }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <section class="hero">
+            <span class="hero-icon"><i class="fa-solid fa-seedling"></i></span>
+            <div class="hero-title" data-i18n="hero-title">Plant Leaf Disease Detector</div>
+            <div class="hero-desc" data-i18n="hero-desc">
+                <i class="fa-solid fa-leaf"></i>
+                Upload a leaf photo to instantly detect diseases and get natural treatment tips.
+                <i class="fa-solid fa-bug"></i>
+            </div>
+            <a class="cta-btn" href="#predict" data-i18n="try-now">Try Now <i class="fa-solid fa-spa"></i></a>
+        </section>
+
+        <!-- Login/Logout and My Garden Link -->
+        {% if session.get('username') %}
+        <div class="user-info">
+            Welcome, {{ session['username'] }}! <a href="/garden" data-i18n="my-garden">My Garden</a> | <a href="/logout" data-i18n="logout">Logout</a>
+        </div>
+        {% else %}
+        <div class="user-info">
+            <a href="/login" data-i18n="login">Login</a> or <a href="/register" data-i18n="register">Register</a> to save detections to My Garden
+        </div>
+        {% endif %}
+
+        <!-- Prediction Form -->
+        <form method="post" enctype="multipart/form-data" class="form-section" id="predict">
+            <!-- Plant Species Selector -->
+            <div class="species-selector">
+                <label for="plant-species" data-i18n="select-species">Select Plant Species:</label>
+                <select id="plant-species" name="plant-species">
+                    <option value="">Select a species</option>
+                    <option value="Tomato">Tomato</option>
+                    <option value="Potato">Potato</option>
+                    <option value="Corn">Corn</option>
+                    <option value="Apple">Apple</option>
+                    <option value="Grape">Grape</option>
+                </select>
+            </div>
+
+            <!-- Drag-and-Drop Upload Zone -->
+            <div class="upload-zone" id="upload-zone">
+                <i class="fa-solid fa-leaf"></i>
+                <p data-i18n="upload-text">Drag & Drop Leaf Image or Click to Upload</p>
+                <input type="file" name="file" id="file" accept="image/*" required hidden />
+            </div>
+            <div class="camera-upload">
+                <button type="button" id="camera-btn" data-i18n="camera-btn">Take Photo from Camera</button>
+                <input type="file" name="camera-file" id="camera-file" accept="image/*" capture="environment" hidden />
+            </div>
+            <div class="image-preview" id="image-preview">
+                <img id="preview-img" src="" alt="Image Preview" style="display: none;" />
+            </div>
+            <div class="progress-spinner hidden" id="progress-spinner">
+                <div class="leaf-spinner"></div>
+                <span data-i18n="processing">Processing... <span id="progress-percent">0%</span></span>
+            </div>
+            <input type="submit" value="Predict Disease" class="submit-btn" data-i18n="predict-btn" />
+        </form>
+
+        {% if image_url %}
+        <div class="card image-card">
+            <h3 data-i18n="uploaded-image">Uploaded Leaf Image:</h3>
+            <div class="image-container">
+                <img src="{{ image_url }}" alt="Uploaded Leaf" id="uploaded-image" />
+                <div class="heatmap-overlay hidden" id="heatmap-overlay"></div>
+                <button class="heatmap-toggle" id="heatmap-toggle" data-i18n="show-heatmap">Show Heatmap</button>
+            </div>
+        </div>
+        {% endif %}
+
+        {% if prediction %}
+        <div class="result-section card">
+            <h2 data-i18n="prediction">Prediction: {{ prediction }} 
+                {% if severity %}
+                <span class="severity-badge {{ severity_class }}">{{ severity }}</span>
+                {% endif %}
+            </h2>
+            {% if confidence %}
+            <p data-i18n="confidence">Confidence: {{ confidence }}%</p>
+            {% endif %}
+            <div class="remedy-accordion">
+                <details open>
+                    <summary data-i18n="organic-remedies">Organic Remedies <i class="fa-solid fa-leaf"></i></summary>
+                    <p>{{ remedy_organic }} <span class="tooltip" title="Use organic compost to boost plant immunity." data-i18n="organic-tooltip">ℹ️</span></p>
+                </details>
+                <details open>
+                    <summary data-i18n="chemical-remedies">Chemical Remedies <i class="fa-solid fa-flask"></i></summary>
+                    <p>{{ remedy_chemical }} <span class="tooltip" title="Follow safety guidelines when applying chemicals." data-i18n="chemical-tooltip">ℹ️</span></p>
+                </details>
+                <details open>
+                    <summary data-i18n="preventive-measures">Preventive Measures <i class="fa-solid fa-shield"></i></summary>
+                    <p>{{ remedy_preventive }} <span class="tooltip" title="Regular monitoring prevents disease spread." data-i18n="preventive-tooltip">ℹ️</span></p>
+                </details>
+            </div>
+            <button class="scientific-toggle" id="scientific-toggle" data-i18n="show-scientific">Show Advanced Details</button>
+            <div class="scientific-details hidden" id="scientific-details">
+                <h3 data-i18n="scientific-details">Scientific Details</h3>
+                <p><strong data-i18n="scientific-name">Scientific Name:</strong> {{ scientific_name }}</p>
+                <p><strong data-i18n="cause">Cause:</strong> {{ cause }}</p>
+                <p><strong data-i18n="chemical-compounds">Chemical Compounds:</strong> {{ chemical_compounds }}</p>
+            </div>
+            {% if session.get('username') %}
+            <form method="post" action="/save_detection">
+                <input type="hidden" name="prediction" value="{{ prediction or '' }}">
+                <input type="hidden" name="severity" value="{{ severity or '' }}">
+                <input type="hidden" name="confidence" value="{{ confidence or 0 }}">
+                <input type="hidden" name="remedy_organic" value="{{ remedy_organic or '' }}">
+                <input type="hidden" name="remedy_chemical" value="{{ remedy_chemical or '' }}">
+                <input type="hidden" name="remedy_preventive" value="{{ remedy_preventive or '' }}">
+                <input type="hidden" name="scientific_name" value="{{ scientific_name or '' }}">
+                <input type="hidden" name="cause" value="{{ cause or '' }}">
+                <input type="hidden" name="chemical_compounds" value="{{ chemical_compounds or '' }}">
+                <input type="hidden" name="image_url" value="{{ image_url or '' }}">
+                <button type="submit" class="save-btn" data-i18n="save-garden">Save to My Garden</button>
+            </form>
+            {% endif %}
+            <button class="share-btn" data-result="Disease: {{ prediction }}{% if severity %} ({{ severity }}){% endif %}{% if confidence %} - Confidence: {{ confidence }}%{% endif %}" data-i18n="share-result">
+                Share Result <i class="fa-solid fa-share"></i>
+            </button>
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+    </div>
+</body>
+</html>

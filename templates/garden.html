@@ -1,0 +1,89 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Garden - Plant Leaf Disease Detector</title>
+    <link rel="stylesheet" href="/static/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="/static/script.js" defer></script>
+</head>
+<body class="light-mode">
+    <!-- Animated background floating leaves -->
+    <div class="floating-leaf"></div>
+    <div class="floating-leaf"></div>
+    <div class="floating-leaf"></div>
+    <div class="floating-leaf"></div>
+    <div class="floating-leaf"></div>
+    
+    <!-- Dark/Light Mode Toggle -->
+    <button class="theme-toggle" title="Toggle Dark/Light Mode">
+        <i class="fa-solid fa-leaf"></i>
+    </button>
+
+    <!-- Language Toggle -->
+    <div class="language-toggle">
+        <label for="language-select" data-i18n="language">Language:</label>
+        <select id="language-select">
+            <option value="en">English</option>
+            <option value="hi">Hindi</option>
+            <option value="te">Telugu</option>
+        </select>
+    </div>
+
+    <div class="container">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="error-message {{ 'success-message' if category == 'success' else '' }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <h2 data-i18n="my-garden">My Garden</h2>
+        <p>Welcome, {{ username }}! <a href="/logout" data-i18n="logout">Logout</a></p>
+        <h3 data-i18n="past-detections">Past Detections</h3>
+        {% if detections %}
+        {% for detection in detections %}
+        <div class="card">
+            <h3 data-i18n="prediction">Prediction: {{ detection[0] }} 
+                {% if detection[1] %}
+                <span class="severity-badge severity-{{ detection[1] }}">{{ detection[1] }}</span>
+                {% endif %}
+            </h3>
+            {% if detection[2] %}
+            <p data-i18n="confidence">Confidence: {{ detection[2] }}%</p>
+            {% endif %}
+            <div class="remedy-accordion">
+                <details>
+                    <summary data-i18n="organic-remedies">Organic Remedies <i class="fa-solid fa-leaf"></i></summary>
+                    <p>{{ detection[3] }}</p>
+                </details>
+                <details>
+                    <summary data-i18n="chemical-remedies">Chemical Remedies <i class="fa-solid fa-flask"></i></summary>
+                    <p>{{ detection[4] }}</p>
+                </details>
+                <details>
+                    <summary data-i18n="preventive-measures">Preventive Measures <i class="fa-solid fa-shield"></i></summary>
+                    <p>{{ detection[5] }}</p>
+                </details>
+            </div>
+            <div class="scientific-details">
+                <h4 data-i18n="scientific-details">Scientific Details</h4>
+                <p><strong data-i18n="scientific-name">Scientific Name:</strong> {{ detection[6] }}</p>
+                <p><strong data-i18n="cause">Cause:</strong> {{ detection[7] }}</p>
+                <p><strong data-i18n="chemical-compounds">Chemical Compounds:</strong> {{ detection[8] }}</p>
+            </div>
+            {% if detection[9] %}
+            <img src="{{ detection[9] }}" alt="Detected Leaf" style="max-width: 200px; border-radius: 10px;" />
+            {% endif %}
+            <p data-i18n="timestamp">Detected on: {{ detection[10] }}</p>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p data-i18n="no-detections">No detections saved yet.</p>
+        {% endif %}
+        <a href="/" data-i18n="back-home">Back to Home</a>
+    </div>
+</body>
+</html>

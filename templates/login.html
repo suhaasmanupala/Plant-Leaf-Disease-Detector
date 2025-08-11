@@ -1,0 +1,25 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login - Plant Leaf Disease Detector</title>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body class="light-mode">
+    <div class="container">
+        <h2 data-i18n="login">Login</h2>
+        <form method="post">
+            <label for="username" data-i18n="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <label for="password" data-i18n="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <button type="submit" data-i18n="login">Login</button>
+        </form>
+        {% if error %}
+        <div class="error-message">{{ error }}</div>
+        {% endif %}
+        <p data-i18n="no-account">No account? <a href="/register" data-i18n="register">Register here</a></p>
+    </div>
+    <script src="/static/script.js" defer></script>
+</body>
+</html>
